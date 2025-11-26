@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-dotenv
+torch
+tinker
+chz
+blobfile
+pandas
+huggingface-hub
+cryptography
+textarena
+datasets
+numpy
+scipy

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/YOUR_USERNAME/tinker-ui/discussions
+    about: Ask questions or discuss ideas with the community
+  - name: Documentation
+    url: https://github.com/YOUR_USERNAME/tinker-ui/blob/main/README.md
+    about: Check the documentation for setup and usage instructions
