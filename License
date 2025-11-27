@@ -1,0 +1,88 @@
+Business Source License 1.1 (BUSL-1.1)
+
+© 2025 Klei Aliaj / Dialogo
+
+Business Source License 1.1
+
+Licensor: Klei Aliaj (Dialogo)
+Licensed Work: Tinker UI  (all source code in this repository)
+
+1. Use Limitation
+
+You may use, study, and modify the Licensed Work for non-commercial purposes only.
+
+Commercial use is strictly prohibited without written permission from the Licensor.
+
+Commercial use includes (but is not limited to):
+
+Selling the software
+
+Offering hosted or SaaS versions
+
+Using it to provide paid services
+
+Integrating it into commercial products
+
+Providing consulting/services based on the software
+
+Any revenue-generating activity involving the software
+
+If you want to use the software commercially, you must obtain a commercial license from the Licensor (Dialogo).
+
+2. Grant of Rights
+
+For non-commercial use, you are granted:
+
+The right to copy the software
+
+The right to modify the software
+
+The right to distribute modified versions as long as the same license is included
+
+All rights not granted above are reserved by the Licensor.
+
+3. Additional Use Grant (Change Date Clause)
+
+On the Change Date, this software will automatically become licensed under the Apache License, Version 2.0, allowing unrestricted commercial use at that time.
+
+This provides:
+
+Open-source freedom in the long term
+
+Commercial protection in the short term
+
+Every commit has its own Change Date defined by the commit timestamp.
+
+4. No Warranty
+
+The Licensed Work is provided “as-is”.
+The Licensor provides no warranty, express or implied.
+The Licensor is not liable for damages arising from use of the software.
+
+5. Termination
+
+Your rights under this license terminate if:
+
+You breach the non-commercial clause
+
+You violate the distribution requirements
+
+You attempt commercial use without a license
+
+Upon termination, you must stop all use of the software immediately.
+
+Commercial License Option
+
+To use the Dialogo Platform commercially, please contact:
+
+Email: kleyaliaj@gmail.com
+Company: Dialogo
+Founder: Klei Aliaj
+
+Summary (human readable)
+
+Free for personal & non-commercial use
+
+Commercial use requires a paid license from Dialogo
+
+After 4 years → automatically becomes Apache 2.0
