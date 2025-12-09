@@ -1,0 +1,21 @@
+"""
+Test requirements for running hyperparameter tests.
+"""
+
+# Testing framework
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+
+# API testing
+requests>=2.28.0
+httpx>=0.24.0
+
+# Mock and fixtures
+responses>=0.23.0
+
+# For UI testing (if implemented)
+# playwright>=1.30.0
+
+# For performance testing (if needed)
+# pytest-benchmark>=4.0.0

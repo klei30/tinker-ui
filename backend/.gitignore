@@ -1,0 +1,35 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+tinker_platform.db
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Artifacts
+artifacts/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

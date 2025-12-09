@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tuner UI - Training Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .metric-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        canvas {
+            max-width: 100%;
+            height: 400px;
+        }
+        .status {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .status.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .eval-results {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .eval-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .eval-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .eval-metric:last-child {
+            border-bottom: none;
+        }
+        .chat-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-top: 20px;
+        }
+        .chat-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .chat-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-button:hover {
+            background: #0056b3;
+        }
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .chat-message.user {
+            background: #e3f2fd;
+            text-align: right;
+        }
+        .chat-message.assistant {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚀 Tuner UI Training Dashboard</h1>
+            <p>Real-time training progress and model evaluation</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>🔥 Current Status</h3>
+                <div id="status" class="status">Loading...</div>
+            </div>
+            <div class="metric-card">
+                <h3>📊 Training Progress</h3>
+                <div class="metric-value" id="progress">0%</div>
+            </div>
+            <div class="metric-card">
+                <h3>🔄 Current Step</h3>
+                <div class="metric-value" id="current-step">0</div>
+            </div>
+            <div class="metric-card">
+                <h3>📉 Current Loss</h3>
+                <div class="metric-value" id="current-loss">0.000</div>
+            </div>
+            <div class="metric-card">
+                <h3>⚡ Learning Rate</h3>
+                <div class="metric-value" id="current-lr">0.000</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">📈 Training Loss Over Time</div>
+            <canvas id="lossChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">🎯 Training Progress</div>
+            <canvas id="progressChart"></canvas>
+        </div>
+
+        <div class="eval-results" id="eval-section" style="display: none;">
+            <div class="eval-title">📋 Evaluation Results</div>
+            <div id="eval-metrics"></div>
+        </div>
+
+        <div class="chat-section">
+            <div class="chat-title">💬 Chat with Fine-Tuned Model</div>
+            <div class="chat-form">
+                <select id="chat-run-select" class="chat-input">
+                    <option value="">Select a completed run...</option>
+                </select>
+                <input type="text" id="chat-prompt" class="chat-input" placeholder="Enter your message..." />
+                <button id="chat-send" class="chat-button">Send</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentRunId = null;
+        let updateInterval = null;
+
+        // Chart setup
+        const lossCtx = document.getElementById('lossChart').getContext('2d');
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+
+        lossCtx.canvas.width = lossCtx.canvas.offsetWidth;
+        lossCtx.canvas.height = 400;
+        progressCtx.canvas.width = progressCtx.canvas.offsetWidth;
+        progressCtx.canvas.height = 400;
+
+        // Initialize charts
+        const lossChart = new Chart(lossCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Training Loss',
+                    data: [],
+                    borderColor: '#007bff',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const progressChart = new Chart(progressCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Training Progress (%)',
+                    data: [],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        function updateMetrics() {
+            fetch(`${API_BASE}/runs/${currentRunId}/realtime-metrics`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update status
+                    const statusEl = document.getElementById('status');
+                    statusEl.textContent = data.status.toUpperCase();
+                    statusEl.className = `status ${data.status.toLowerCase()}`;
+
+                    // Update metrics
+                    document.getElementById('progress').textContent = `${(data.progress * 100).toFixed(1)}%`;
+                    document.getElementById('current-step').textContent = data.current_step || 'Unknown';
+                    document.getElementById('current-loss').textContent = parseFloat(data.current_loss || 0).toFixed(4);
+                    document.getElementById('current-lr').textContent = parseFloat(data.current_lr || 0).toExponential(2);
+
+                    // Update status color
+                    if (data.status === 'running') {
+                        statusEl.className = 'status running';
+                    } else if (data.status === 'completed') {
+                        statusEl.className = 'status completed';
+                    } else if (data.status === 'failed') {
+                        statusEl.className = 'status failed';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating metrics:', error);
+                });
+        }
+
+        function updateVisualizationData() {
+            fetch(`${API_BASE}/runs/${currentRunId}/visualization-data`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update charts with new data
+                    if (data.metrics && data.metrics.length > 0) {
+                        const steps = data.metrics.map(m => m.step);
+                        const losses = data.metrics.map(m => m.loss);
+                        const progress = data.metrics.map(m => m.progress * 100);
+
+                        // Update loss chart
+                        lossChart.data.labels = steps;
+                        lossChart.data.datasets[0].data = losses;
+                        lossChart.update();
+
+                        // Update progress chart
+                        progressChart.data.labels = steps;
+                        progressChart.data.datasets[0].data = progress;
+                        progressChart.update();
+                    }
+
+                    // Update evaluation results
+                    if (data.evaluation) {
+                        const evalSection = document.getElementById('eval-section');
+                        evalSection.style.display = 'block';
+                        
+                        const evalMetrics = document.getElementById('eval-metrics');
+                        evalMetrics.innerHTML = `
+                            <div class="eval-metric">
+                                <strong>Accuracy:</strong> ${(data.evaluation.results.accuracy * 100).toFixed(1)}%
+                            </div>
+                            <div class="eval-metric">
+                                <strong>Total Tests:</strong> ${data.evaluation.results.total_tests}
+                            </div>
+                            <div class="eval-metric">
+                                <strong>Passed Tests:</strong> ${data.evaluation.results.correct_tests}
+                            </div>
+                            <div class="eval-metric">
+                                <strong>Evaluation Type:</strong> ${data.evaluation.evaluation_type}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating visualization:', error);
+                });
+        }
+
+        function startMonitoring(runId) {
+            currentRunId = runId;
+            
+            // Clear existing data
+            lossChart.data.labels = [];
+            lossChart.data.datasets[0].data = [];
+            lossChart.update();
+            
+            progressChart.data.labels = [];
+            progressChart.data.datasets[0].data = [];
+            progressChart.update();
+
+            // Start updating
+            updateMetrics();
+            updateVisualizationData();
+            
+            // Set up periodic updates
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            
+            updateInterval = setInterval(() => {
+                updateMetrics();
+                updateVisualizationData();
+            }, 2000); // Update every 2 seconds
+        }
+
+        function loadRuns() {
+            fetch(`${API_BASE}/runs`)
+                .then(response => response.json())
+                .then(data => {
+                    const runsSelect = document.getElementById('run-select');
+                    const chatRunsSelect = document.getElementById('chat-run-select');
+                    runsSelect.innerHTML = '';
+                    chatRunsSelect.innerHTML = '<option value="">Select a completed run...</option>';
+
+                    data.runs.forEach(run => {
+                        const option = document.createElement('option');
+                        option.value = run.id;
+                        option.textContent = `Run ${run.id} - ${run.recipe_type} (${run.status})`;
+                        runsSelect.appendChild(option);
+
+                        // Only add completed runs to chat selector
+                        if (run.status === 'completed') {
+                            const chatOption = document.createElement('option');
+                            chatOption.value = run.id;
+                            chatOption.textContent = `Run ${run.id} - ${run.recipe_type}`;
+                            chatRunsSelect.appendChild(chatOption);
+                        }
+                    });
+
+                    // Auto-select first running run
+                    const runningRun = data.runs.find(r => r.status === 'running');
+                    if (runningRun) {
+                        startMonitoring(runningRun.id);
+                        runsSelect.value = runningRun.id;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading runs:', error);
+                });
+        }
+
+        function sendChatMessage() {
+            const runId = document.getElementById('chat-run-select').value;
+            const prompt = document.getElementById('chat-prompt').value.trim();
+
+            if (!runId || !prompt) {
+                alert('Please select a run and enter a message.');
+                return;
+            }
+
+            // Add user message to chat
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML += `<div class="chat-message user"><strong>You:</strong> ${prompt}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Send to API
+            fetch(`${API_BASE}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                },
+                body: JSON.stringify({
+                    run_id: parseInt(runId),
+                    prompt: prompt,
+                    temperature: 0.7,
+                    max_tokens: 100
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Add assistant response
+                messagesDiv.innerHTML += `<div class="chat-message assistant"><strong>Assistant:</strong> ${data.response}</div>`;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Chat error:', error);
+                messagesDiv.innerHTML += `<div class="chat-message assistant" style="color: red;"><strong>Error:</strong> Failed to get response</div>`;
+            });
+
+            // Clear input
+            document.getElementById('chat-prompt').value = '';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRuns();
+
+            document.getElementById('run-select').addEventListener('change', (e) => {
+                const runId = parseInt(e.target.value);
+                if (runId) {
+                    startMonitoring(runId);
+                } else {
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                        updateInterval = null;
+                    }
+                }
+            });
+
+            document.getElementById('chat-send').addEventListener('click', sendChatMessage);
+            document.getElementById('chat-prompt').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendChatMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
